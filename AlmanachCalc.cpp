@@ -63,15 +63,15 @@ double* axis(double eps_a, double w_a, double T_dr, double ci) {
     double Ck = pow(1 - eps_a * eps_a, 3. / 2.) / pow(1 + eps_a * cos(w_a * PI), 2);
     double Dk = pow(1 + eps_a * cos(w_a * PI), 3) / (1 - eps_a * eps_a);
     double T_osk = T_dr / (1 - Ak * (Bk * Ck + Dk));
-    double del = a;
+   
     double temp;
     do {
 
         del = a;
         Ak = 3. / 2. * J * pow((a_e / (p)), 2);
-        Bk = 2 - 5. / 2. * pow(sin(ci), 2);
-        Ck = pow(1 - eps_a * eps_a, 3. / 2.) / pow(1 + eps_a * cos(w_a * PI), 2);
-        Dk = pow(1 + eps_a * cos(w_a * PI), 3) / (1 - eps_a * eps_a);
+        
+        
+       
         T_osk = T_dr / (1 - Ak * (Bk * Ck + Dk));
         a = (pow(pow(T_osk / (2 * PI), 2) * GM, 1. / 3.));
         p = a * (1 - eps_a * eps_a);
@@ -85,7 +85,7 @@ double* axis(double eps_a, double w_a, double T_dr, double ci) {
     arr[1] = p;
     return arr;
 }
-double* error(double eps_a, double w, double a, double ci, double L) {
+void error(double eps_a, double w, double a, double ci, double L,double temp[8]) {
     double h = eps_a * sin(w);
     double l = eps_a * cos(w);
     double B = 1.5 * J * pow(a_e/a,2);
@@ -97,16 +97,16 @@ double* error(double eps_a, double w, double a, double ci, double L) {
     double del_L = 2 * B * (1 - 1.5 * pow(sin(ci), 2)) * (1.75 * l * sin(L) - 1.75 * h * cos(L)) + 3 * B * pow(sin(ci), 2) * (-(7. / 24.) * h * cos(L) - (7. / 24.) * l * sin(L) - (49. / 72.) * h * cos(3 * L) + (49. / 72.) * l * sin(3 * L) + 0.25 * sin(2 * L)) + B * pow(cos(ci), 2) * (3.5 * l * sin(L) - 2.5 * h * cos(L) - 0.5 * sin(2 * L) + (7. / 6.) * l * sin(3 * L) + (7. / 6.) * h * cos(3 * L));
 
 
-    double arr[8];
-    arr[0] = h;
-    arr[1] = l;
-    arr[2] = del_a;
-    arr[3] = del_l;
-    arr[4] = del_h;
-    arr[5] = del_lam;
-    arr[6] = del_i;
-    arr[7] = del_L;
-    return arr;
+    
+    temp[0] = h;
+    temp[1] = l;
+    temp[2] = del_a;
+   temp[3] = del_l;
+    temp[4] = del_h;
+    temp[5] = del_lam;
+    temp[6] = del_i;
+    temp[7] = del_L;
+    
 }
 double Kepler_equals(double new_L, double new_w, double new_eps) {
 
@@ -130,15 +130,7 @@ double Kepler_equals(double new_L, double new_w, double new_eps) {
 void PredictionAlmanac(int N, int t_i, AlmGlon &Glon, Satellite &G){
 
     double T_sr = 43200; // ???
-    //double N_a=Glon->N_a;
-    //
-    //double t_lam_a=Glon->t_lam_a;
-    //double del_T_a = Glon->del_T_a;
-    //double del_Ax_T_a = Glon->del_Ax_T_a;
-    //double lam_a = Glon->lam_a;
-    //double w_a = Glon->w_a;
-    //double eps_a = Glon->eps_a;
-    //double del_i_a = Glon->del_i_a;
+   
 
     //--------------------------------------------
     //1.
@@ -175,16 +167,13 @@ void PredictionAlmanac(int N, int t_i, AlmGlon &Glon, Satellite &G){
 
     //--------------------------------------------
     //9.
-    double* del_error_L1 = error(Glon.eps_a, w, a, ci, L1);
+    
     double temp[8], temp2[8];
-    for (int i = 0;i < 8;i++) {
-        temp[i] = del_error_L1[i];
-    }
+   
+    del_error_L1 = error(Glon.eps_a, w, a, ci, L1,temp);
 
-    double* del_error_L2 = error(Glon.eps_a, w, a, ci, L2);
-    for (int i = 0;i < 8;i++) {
-        temp2[i] = del_error_L2[i];
-    }
+    del_error_L2 = error(Glon.eps_a, w, a, ci, L2,temp2);
+   
 
 
     double new_h = temp[0] + temp2[4] - temp[4];
@@ -239,3 +228,42 @@ void printA(Satellite G){
              //<<"del  z:" << fabs(-9635.6794316575106-G.z)<<"\n" <<"del  Vx:" << fabs(-0.68610081793104882
     //-G.x_vel)<<"\n" <<"del Vy:" << fabs(-1.1365486509759850-G.y_vel)<<"\n" <<"del Vz:" << fabs(-3.2499858708515017-G.z_vel)<<"\n";
 }
+int main(int argc, char* argv[])
+{
+
+    
+
+
+
+
+    int N = 1453;//1039 1453
+    int t_i = 1500;// 900 51300
+    int N_a = 1452;
+    double t_lam_a = 33571.625;
+    double del_T_a = -2655.98046875;
+    double del_Ax_T_a = 6.103515625e-05;
+    double lam_a = -0.293967247009277;
+    double w_a = 0.57867431640625;
+    double eps_a = 0.000432968139648438;
+    double del_i_a = 0.00987052917480469;
+
+    
+    AlmGlon Glont;
+    Glont.dI=del_i_a;
+    Glont.dT=del_T_a;
+    Glont.dTT=del_Ax_T_a;
+    Glont.eps_a=eps_a;
+    Glont.Lam_a=lam_a;
+    Glont.w_a=w_a;
+    Glont.t_lam_a=t_lam_a;
+    Glont.N_a=N_a;
+   
+
+    
+    Satellite G;
+    PredictionAlmanac(N, t_i, Glon[0], G);
+
+    printA(G);
+}
+
+
